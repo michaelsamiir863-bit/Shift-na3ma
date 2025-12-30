@@ -16,7 +16,7 @@ body{
   margin:auto;
   padding:10px;
   border:1px solid #000;
-  font-weight:bold; /* كل النصوص بولد */
+  font-weight:bold;
 }
 table{
   width:100%;
@@ -88,7 +88,7 @@ button{
     max-width:80mm; /* حجم إيصال حراري صغير */
   }
   table,td,span{
-    font-weight:bold; /* كل النصوص بولد في الطباعة */
+    font-weight:bold;
   }
 }
 </style>
@@ -172,16 +172,18 @@ function closePreview(){
 function printPreview(){
   let clone = receipt.cloneNode(true);
 
-  // استبدال الحقول بالقيم المدخلة كنص
+  // استبدال كل input بالقيمة الحالية
   clone.querySelectorAll('input').forEach(input=>{
     let span = document.createElement('span');
-    span.textContent = input.value;
+    span.textContent = input.value; 
     span.style.fontWeight='bold';
     input.parentNode.replaceChild(span,input);
   });
+
+  // استبدال كل select بالقيمة الحالية
   clone.querySelectorAll('select').forEach(select=>{
     let span = document.createElement('span');
-    span.textContent = select.value;
+    span.textContent = select.value; 
     span.style.fontWeight='bold';
     select.parentNode.replaceChild(span,select);
   });
