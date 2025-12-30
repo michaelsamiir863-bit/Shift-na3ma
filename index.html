@@ -87,7 +87,7 @@ button{
     border:none;
     max-width:80mm; /* حجم إيصال حراري صغير */
   }
-  table,td,input,select{
+  table,td,span{
     font-weight:bold; /* كل النصوص بولد في الطباعة */
   }
 }
@@ -128,18 +128,76 @@ button{
 </div>
 
 <script>
-for(let i=1;i<=12;i++){fromShift.innerHTML += `<option>${i}</option>`;toShift.innerHTML += `<option>${i}</option>`;}
-function calc(){let c=Number(cash.value)||0;let i=Number(insta.value)||0;let w=Number(wallet.value)||0;total.value=c+i+w;}
-function setDay(){let d=new Date(date.value);if(!isNaN(d)){day.value=d.toLocaleDateString('ar-EG',{weekday:'long'});}}
-function openPreview(){previewContent.innerHTML=`<div style="text-align:center;margin-bottom:10px;">
+// توليد الشيفت 1 → 12
+for(let i=1;i<=12;i++){
+  fromShift.innerHTML += `<option>${i}</option>`;
+  toShift.innerHTML += `<option>${i}</option>`;
+}
+
+// حساب إجمالي ما سبق
+function calc(){
+  let c = Number(cash.value)||0;
+  let i = Number(insta.value)||0;
+  let w = Number(wallet.value)||0;
+  total.value = c+i+w;
+}
+
+// اليوم حسب التاريخ
+function setDay(){
+  let d = new Date(date.value);
+  if(!isNaN(d)){
+    day.value = d.toLocaleDateString('ar-EG',{weekday:'long'});
+  }
+}
+
+// فتح المعاينة
+function openPreview(){
+  previewContent.innerHTML = `<div style="text-align:center;margin-bottom:10px;">
       <button onclick="printPreview()">🖨️ طباعة الإيصال</button>
       <button onclick="closePreview()">❌ إغلاق</button>
-    </div>`+receipt.outerHTML;document.getElementById("preview").style.display="flex";}
-function closePreview(){previewContent.innerHTML=`<div style="text-align:center;margin-bottom:10px;">
+    </div>` + receipt.outerHTML;
+  document.getElementById("preview").style.display="flex";
+}
+
+// غلق المعاينة
+function closePreview(){
+  previewContent.innerHTML = `<div style="text-align:center;margin-bottom:10px;">
       <button onclick="printPreview()">🖨️ طباعة الإيصال</button>
       <button onclick="closePreview()">❌ إغلاق</button>
-    </div>`;document.getElementById("preview").style.display="none";}
-function printPreview(){let printWindow=window.open('','PRINT','width=300,height=600');printWindow.document.write('<html><head><title>الإيصال</title>');printWindow.document.write('<style>body{font-family:Tahoma;text-align:center;} table{width:100%;border-collapse:collapse;} td{border:1px solid #000;padding:6px;} input,select{border:none;text-align:center;font-weight:bold;} </style>');printWindow.document.write('</head><body >');printWindow.document.write(document.getElementById("previewContent").innerHTML);printWindow.document.write('</body></html>');printWindow.document.close();printWindow.focus();printWindow.print();printWindow.close();}
+    </div>`;
+  document.getElementById("preview").style.display="none";
+}
+
+// الطباعة مع عرض البيانات المدخلة
+function printPreview(){
+  let clone = receipt.cloneNode(true);
+
+  // استبدال الحقول بالقيم المدخلة كنص
+  clone.querySelectorAll('input').forEach(input=>{
+    let span = document.createElement('span');
+    span.textContent = input.value;
+    span.style.fontWeight='bold';
+    input.parentNode.replaceChild(span,input);
+  });
+  clone.querySelectorAll('select').forEach(select=>{
+    let span = document.createElement('span');
+    span.textContent = select.value;
+    span.style.fontWeight='bold';
+    select.parentNode.replaceChild(span,select);
+  });
+
+  // فتح نافذة الطباعة
+  let printWindow = window.open('','PRINT','width=300,height=600');
+  printWindow.document.write('<html><head><title>الإيصال</title>');
+  printWindow.document.write('<style>body{font-family:Tahoma;text-align:center;} table{width:100%;border-collapse:collapse;} td{border:1px solid #000;padding:6px;} span{font-weight:bold;}</style>');
+  printWindow.document.write('</head><body>');
+  printWindow.document.write(clone.outerHTML);
+  printWindow.document.write('</body></html>');
+  printWindow.document.close();
+  printWindow.focus();
+  printWindow.print();
+  printWindow.close();
+}
 </script>
 
 </body>
