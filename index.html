@@ -82,10 +82,10 @@ button{
 /* الطباعة */
 @media print{
   body{background:#fff;padding:0;}
-  .actions,.preview-overlay button{display:none;} /* عدم طباعة الأزرار */
+  .actions,.preview-overlay button{display:none;}
   .sheet{
     border:none;
-    max-width:80mm; /* حجم إيصال حراري صغير */
+    max-width:80mm;
   }
   table,td,span{
     font-weight:bold;
@@ -168,11 +168,11 @@ function closePreview(){
   document.getElementById("preview").style.display="none";
 }
 
-// الطباعة مع عرض البيانات المدخلة
+// الطباعة مع عرض البيانات المدخلة بشكل صحيح
 function printPreview(){
   let clone = receipt.cloneNode(true);
 
-  // استبدال كل input بالقيمة الحالية
+  // استبدال جميع الحقول بالقيم الحالية المدخلة
   clone.querySelectorAll('input').forEach(input=>{
     let span = document.createElement('span');
     span.textContent = input.value; 
@@ -180,10 +180,9 @@ function printPreview(){
     input.parentNode.replaceChild(span,input);
   });
 
-  // استبدال كل select بالقيمة الحالية
   clone.querySelectorAll('select').forEach(select=>{
     let span = document.createElement('span');
-    span.textContent = select.value; 
+    span.textContent = select.options[select.selectedIndex].text; // نص الخيار المحدد
     span.style.fontWeight='bold';
     select.parentNode.replaceChild(span,select);
   });
