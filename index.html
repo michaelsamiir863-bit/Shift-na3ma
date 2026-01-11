@@ -8,7 +8,7 @@
 <style>
 body{
   font-family:Tahoma;
-  background:#f0f0f0;
+  background:#f3f3f3;
   padding:10px;
 }
 .sheet{
@@ -32,47 +32,51 @@ input,select{
   width:100%;
   border:none;
   outline:none;
-  font-family:Tahoma;
-  font-size:14px;
   text-align:center;
+  font-family:Tahoma;
   background:transparent;
 }
-.total{
-  font-weight:bold;
-}
+.total{font-weight:bold}
+
 .actions{
   text-align:center;
   margin-top:15px;
 }
 button{
-  padding:8px 18px;
-  margin:5px;
+  padding:6px 14px;
+  margin:3px;
   font-size:14px;
   cursor:pointer;
 }
 
-/* نافذة المعاينة */
-.preview-overlay{
-  position:fixed;
-  inset:0;
-  background:rgba(0,0,0,.6);
+/* المعاينة */
+.preview{
   display:none;
-  justify-content:center;
-  align-items:center;
-  z-index:9999;
-}
-.preview-box{
   background:#fff;
   width:80mm;
-  padding:8px;
+  margin:20px auto;
   border:1px solid #000;
+  padding:8px;
+}
+
+/* الحاسبة */
+.calc-box{
+  display:none;
+  background:#fff;
+  border:1px solid #000;
+  padding:10px;
+  margin-top:8px;
+}
+.calc-box input{
+  border:1px solid #000;
+  margin-bottom:6px;
 }
 
 /* الطباعة */
 @media print{
-  body{background:#fff;padding:0}
-  .actions,.preview-overlay{display:none !important}
-  .sheet{
+  body{background:#fff}
+  .actions,.no-print,.calc-box{display:none}
+  .sheet,.preview{
     border:none;
     max-width:80mm;
   }
@@ -82,36 +86,35 @@ button{
 
 <body>
 
-<div class="sheet" id="receipt">
+<div class="sheet no-print" id="form">
 <table>
+
 <tr><td>اسم الصيدلية</td><td><input id="pharmacy" value="نعمة الله"></td></tr>
 <tr><td>اليوم</td><td><input id="day" readonly></td></tr>
 
 <tr>
 <td>الشيفت</td>
-<td>
-من <select id="fromShift"></select>
-إلى <select id="toShift"></select>
-</td>
+<td>من <select id="fromShift"></select> إلى <select id="toShift"></select></td>
 </tr>
 
-<tr>
-<td>التاريخ</td>
-<td><input type="date" id="date"></td>
-</tr>
+<tr><td>التاريخ</td><td><input type="date" id="date"></td></tr>
 
-<tr><td>نقدي فعلي</td><td><input type="number" id="cash"></td></tr>
+<tr><td>نقدي</td><td><input type="number" id="cash"></td></tr>
 <tr><td>انستاباي</td><td><input type="number" id="insta"></td></tr>
 <tr><td>محفظة</td><td><input type="number" id="wallet"></td></tr>
 
+<tr><td>إجمالي ما سبق</td><td><input id="total" class="total" readonly></td></tr>
+
 <tr>
-<td>إجمالي ما سبق</td>
-<td><input id="total" class="total" readonly></td>
+<td>إجمالي الفيزا</td>
+<td>
+<input type="number" id="visa">
+<button onclick="toggleCalc()">🔢</button>
+</td>
 </tr>
 
-<tr><td>إجمالي الفيزا</td><td><input type="number" id="visa"></td></tr>
-<tr><td>عدد العمليات</td><td><input type="number" id="ops"></td></tr>
-<tr><td>مشتريات أفراد</td><td><input type="number" id="personal"></td></tr>
+<tr><td>عدد العمليات</td><td><input type="number" id="operations" readonly></td></tr>
+<tr><td>مشتريات الأفراد</td><td><input type="number" id="personal"></td></tr>
 
 <tr>
 <td>مسؤول الدرج</td>
@@ -144,88 +147,99 @@ button{
 </select>
 </td>
 </tr>
+
 </table>
+
+<!-- الحاسبة -->
+<div class="calc-box" id="calcBox">
+<input id="calcInput" placeholder="مثال: 20+10+20">
+<button onclick="calcVisa()">= حساب</button>
+<button onclick="addToVisa()">➕ إضافة للفيزا</button>
+<div id="calcResult"></div>
+</div>
 </div>
 
-<div class="actions">
-<button onclick="openPreview()">👁️ معاينة</button>
+<div class="actions no-print">
+<button onclick="previewReceipt()">👁️ معاينة</button>
 <button onclick="printReceipt()">🖨️ طباعة</button>
 </div>
 
-<!-- نافذة المعاينة -->
-<div class="preview-overlay" id="preview" onclick="closePreview()">
-  <div class="preview-box" id="previewContent"></div>
-</div>
+<div class="preview" id="preview"></div>
 
 <script>
-const inputs = document.querySelectorAll("input,select");
-
-/* توليد الشيفت */
+/* الشيفت */
 for(let i=1;i<=12;i++){
-  fromShift.innerHTML += `<option>${i}</option>`;
-  toShift.innerHTML += `<option>${i}</option>`;
+  fromShift.innerHTML+=`<option>${i}</option>`;
+  toShift.innerHTML+=`<option>${i}</option>`;
 }
 
-/* حساب الإجمالي */
+/* الإجمالي */
 function calc(){
-  total.value =
-    (+cash.value||0) + (+insta.value||0) + (+wallet.value||0);
+  total.value=(+cash.value||0)+(+insta.value||0)+(+wallet.value||0);
 }
-cash.oninput = insta.oninput = wallet.oninput = calc;
+cash.oninput=insta.oninput=wallet.oninput=calc;
 
 /* اليوم */
-date.onchange = ()=>{
-  let d = new Date(date.value);
+date.onchange=()=>{
+  let d=new Date(date.value);
   if(!isNaN(d))
-    day.value = d.toLocaleDateString('ar-EG',{weekday:'long'});
+    day.value=d.toLocaleDateString('ar-EG',{weekday:'long'});
 };
 
-/* LocalStorage */
-inputs.forEach(el=>{
-  if(el.id && localStorage.getItem(el.id))
-    el.value = localStorage.getItem(el.id);
-
-  el.oninput = ()=>{
-    if(el.id)
-      localStorage.setItem(el.id,el.value);
-    calc();
-  };
-});
-calc();
-
-/* المعاينة الاحترافية */
-function openPreview(){
-  let clone = receipt.cloneNode(true);
-
-  clone.querySelectorAll("input,select").forEach(el=>{
-    let span = document.createElement("span");
-    span.textContent = el.value || "—";
-    el.replaceWith(span);
-  });
-
-  previewContent.innerHTML = "";
-  previewContent.appendChild(clone);
-  preview.style.display="flex";
-}
-
-function closePreview(){
-  preview.style.display="none";
+/* المعاينة */
+function previewReceipt(){
+  preview.innerHTML=`
+  <table>
+    <tr><td>اسم الصيدلية</td><td>${pharmacy.value}</td></tr>
+    <tr><td>اليوم</td><td>${day.value}</td></tr>
+    <tr><td>الشيفت</td><td>${fromShift.value} - ${toShift.value}</td></tr>
+    <tr><td>التاريخ</td><td>${date.value}</td></tr>
+    <tr><td>نقدي</td><td>${cash.value}</td></tr>
+    <tr><td>انستاباي</td><td>${insta.value}</td></tr>
+    <tr><td>محفظة</td><td>${wallet.value}</td></tr>
+    <tr><td><b>الإجمالي</b></td><td><b>${total.value}</b></td></tr>
+    <tr><td>إجمالي الفيزا</td><td>${visa.value}</td></tr>
+    <tr><td>عدد العمليات</td><td>${operations.value}</td></tr>
+    <tr><td>مشتريات الأفراد</td><td>${personal.value}</td></tr>
+    <tr><td>مسؤول الدرج</td><td>${drawer.value}</td></tr>
+    <tr><td>المراجع</td><td>${reviewer.value}</td></tr>
+  </table>`;
+  preview.style.display="block";
 }
 
 /* الطباعة */
 function printReceipt(){
-  closePreview();
-  window.print();
+  previewReceipt();
+  setTimeout(()=>window.print(),300);
 }
 
-/* تفريغ بعد الطباعة */
-window.onafterprint = ()=>{
-  inputs.forEach(el=>{
-    el.value="";
-    if(el.id) localStorage.removeItem(el.id);
-  });
-  calc();
-};
+/* الحاسبة الذكية */
+function toggleCalc(){
+  calcBox.style.display =
+    calcBox.style.display==="block" ? "none" : "block";
+}
+
+function calcVisa(){
+  try{
+    let expr = calcInput.value.replace(/\s+/g,'');
+    let result = eval(expr);
+
+    let ops = expr.split('+').filter(v=>v!=="").length;
+
+    calcResult.innerHTML =
+      "الإجمالي = " + result + "<br>عدد العمليات = " + ops;
+
+    calcResult.dataset.val = result;
+    operations.value = ops;
+  }catch{
+    calcResult.innerHTML="عملية غير صحيحة";
+    calcResult.dataset.val="";
+  }
+}
+
+function addToVisa(){
+  visa.value = Number(calcResult.dataset.val||0);
+}
 </script>
 
 </body>
