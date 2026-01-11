@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> Closing the shifts</title>
+<title>جرد الصيدلية</title>
 
 <style>
 body{
@@ -109,7 +109,7 @@ button{
 <td>نقدي</td>
 <td>
 <input id="cash">
-<button onclick="openCashCalc()">🔢</button>
+<button onclick="openCashCalc()">🧮</button>
 </td>
 </tr>
 
@@ -122,15 +122,44 @@ button{
 <td>إجمالي الفيزا</td>
 <td>
 <input id="visa">
-<button onclick="openVisaCalc()">🔢</button>
+<button onclick="openVisaCalc()">🧮</button>
 </td>
 </tr>
 
 <tr><td>عدد العمليات</td><td><input id="operations" readonly></td></tr>
 <tr><td>مشتريات الأفراد</td><td><input></td></tr>
 
-<tr><td>مسؤول الدرج</td><td><input></td></tr>
-<tr><td>المراجع</td><td><input></td></tr>
+<tr>
+<td>مسؤول الدرج</td>
+<td>
+<select id="responsible">
+<option></option>
+<option>د مايكل سمير</option>
+<option>د هاني رضا</option>
+<option>د هبة</option>
+<option>د راعوث</option>
+<option>د كوثر</option>
+<option>د اسلام</option>
+<option>د بسنت</option>
+</select>
+</td>
+</tr>
+
+<tr>
+<td>المراجع</td>
+<td>
+<select id="reviewer">
+<option></option>
+<option>د مايكل سمير</option>
+<option>د هاني رضا</option>
+<option>د هبة</option>
+<option>د راعوث</option>
+<option>د كوثر</option>
+<option>د اسلام</option>
+<option>د بسنت</option>
+</select>
+</td>
+</tr>
 </table>
 </div>
 
@@ -202,18 +231,14 @@ cashExpr.addEventListener('input',()=>{
     calcTotal();
   }
 });
-
-/* إضافة نقدي */
-function addCash(){
-  closePopup();
-}
+function addCash(){ closePopup(); }
 
 /* فيزا تلقائي */
 visaExpr.addEventListener('input',()=>{
   try{
     let expr = visaExpr.value.replace(/\s+/g,'');
     let r = eval(expr || 0);
-    let ops = (expr.match(/[\+\-\*\/]/g)||[]).length + 1; // عدد العمليات
+    let ops = (expr.match(/[\+\-\*\/]/g)||[]).length + 1;
     visaRes.innerHTML = `الإجمالي = ${r}<br>عدد العمليات = ${ops}`;
     visa.value = r;
     operations.value = ops;
@@ -223,11 +248,7 @@ visaExpr.addEventListener('input',()=>{
     operations.value = '';
   }
 });
-
-/* إضافة فيزا */
-function addVisa(){
-  closePopup();
-}
+function addVisa(){ closePopup(); }
 
 /* معاينة */
 function previewReceipt(){
@@ -243,6 +264,8 @@ preview.innerHTML=`
 <tr><td><b>الإجمالي</b></td><td><b>${total.value}</b></td></tr>
 <tr><td>فيزا</td><td>${visa.value}</td></tr>
 <tr><td>عدد العمليات</td><td>${operations.value}</td></tr>
+<tr><td>مسؤول الدرج</td><td>${responsible.value}</td></tr>
+<tr><td>المراجع</td><td>${reviewer.value}</td></tr>
 </table>`;
 preview.style.display="block";
 }
