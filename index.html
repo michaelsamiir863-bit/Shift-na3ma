@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> Closing the shifts</title>
+<title>جرد الصيدلية</title>
 
 <style>
 body{
@@ -270,11 +270,9 @@ preview.innerHTML=`
 preview.style.display="block";
 }
 
+/* الطباعة الاحترافية */
 function printReceipt(){
-  // تحديث المعاينة أولاً
   previewReceipt();
-
-  // إنشاء نافذة مؤقتة للطباعة
   const printWindow = window.open('', '', 'width=800,height=600');
   printWindow.document.write(`
     <html dir="rtl">
@@ -295,8 +293,6 @@ function printReceipt(){
   printWindow.focus();
   printWindow.print();
   printWindow.close();
-}
-
 }
 </script>
 
