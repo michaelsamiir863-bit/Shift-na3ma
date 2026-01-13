@@ -38,7 +38,7 @@ input,select{
 .total{font-weight:bold}
 
 button{
-  padding:6px 12px;
+  padding:6px 10px;
   margin:3px;
   cursor:pointer;
 }
@@ -81,13 +81,6 @@ button{
   border:1px solid #000;
   padding:8px;
 }
-
-/* الطباعة */
-@media print{
-  .actions,button,.popup{display:none}
-  body{background:#fff}
-  .sheet,.preview{border:none;max-width:80mm}
-}
 </style>
 </head>
 
@@ -109,12 +102,19 @@ button{
 <td>نقدي</td>
 <td>
 <input id="cash">
-<button onclick="openCashCalc()">🧮</button>
+<button onclick="openPopup('cash')">🧮</button>
 </td>
 </tr>
 
 <tr><td>انستاباي</td><td><input id="insta"></td></tr>
-<tr><td>محفظة</td><td><input id="wallet"></td></tr>
+
+<tr>
+<td>محفظة</td>
+<td>
+<input id="wallet">
+<button onclick="openPopup('wallet')">🧮</button>
+</td>
+</tr>
 
 <tr><td>إجمالي ما سبق</td><td><input id="total" class="total" readonly></td></tr>
 
@@ -122,12 +122,11 @@ button{
 <td>إجمالي الفيزا</td>
 <td>
 <input id="visa">
-<button onclick="openVisaCalc()">🧮</button>
+<button onclick="openPopup('visa')">🧮</button>
 </td>
 </tr>
 
 <tr><td>عدد العمليات</td><td><input id="operations" readonly></td></tr>
-<tr><td>مشتريات الأفراد</td><td><input></td></tr>
 
 <tr>
 <td>مسؤول الدرج</td>
@@ -170,30 +169,18 @@ button{
 
 <div class="preview" id="preview"></div>
 
-<!-- ===== Popup النقدي ===== -->
-<div class="popup" id="cashPopup">
+<!-- ===== حاسبة موحدة ===== -->
+<div class="popup" id="calcPopup">
 <div class="popup-box">
-<h4>🧮 حاسبة النقدي</h4>
-<input id="cashExpr" placeholder="10*200+1000">
-<div class="result" id="cashRes"></div>
-<button onclick="addCash()">➕ إضافة</button>
-<button onclick="closePopup()">✖ إغلاق</button>
-</div>
-</div>
-
-<!-- ===== Popup الفيزا ===== -->
-<div class="popup" id="visaPopup">
-<div class="popup-box">
-<h4>🧮 حاسبة الفيزا</h4>
-<input id="visaExpr" placeholder="10+10+10">
-<div class="result" id="visaRes"></div>
-<button onclick="addVisa()">➕ إضافة</button>
+<h4>🧮 آلة حاسبة</h4>
+<input id="exprInput" placeholder="مثال: 10*200+500">
+<div class="result" id="calcResult"></div>
 <button onclick="closePopup()">✖ إغلاق</button>
 </div>
 </div>
 
 <script>
-/* الشيفت */
+/* شيفت */
 for(let i=1;i<=12;i++){
   fromShift.innerHTML+=`<option>${i}</option>`;
   toShift.innerHTML+=`<option>${i}</option>`;
@@ -203,54 +190,44 @@ for(let i=1;i<=12;i++){
 date.onchange=()=>{
   let d=new Date(date.value);
   if(!isNaN(d)) day.value=d.toLocaleDateString('ar-EG',{weekday:'long'});
-}
+};
 
-/* الإجمالي */
+/* إجمالي */
 function calcTotal(){
   total.value=(+cash.value||0)+(+insta.value||0)+(+wallet.value||0);
 }
 cash.oninput=insta.oninput=wallet.oninput=calcTotal;
 
-/* Popup */
-function openCashCalc(){cashPopup.style.display="flex"}
-function openVisaCalc(){visaPopup.style.display="flex"}
-function closePopup(){
-  cashPopup.style.display=visaPopup.style.display="none";
+/* ===== الحاسبة ===== */
+let currentTarget=null;
+function openPopup(type){
+  currentTarget=type;
+  exprInput.value='';
+  calcResult.innerHTML='';
+  calcPopup.style.display="flex";
 }
 
-/* نقدي تلقائي */
-cashExpr.addEventListener('input',()=>{
+exprInput.addEventListener('input',()=>{
   try{
-    let r = eval(cashExpr.value || 0);
-    cashRes.innerHTML = "الإجمالي = " + r;
-    cash.value = r;
+    let expr=exprInput.value.replace(/\s+/g,'');
+    let r=eval(expr||0);
+    calcResult.innerHTML="الإجمالي = "+r;
+
+    if(currentTarget==='cash') cash.value=r;
+    if(currentTarget==='wallet') wallet.value=r;
+    if(currentTarget==='visa'){
+      visa.value=r;
+      operations.value=(expr.match(/[\+\-\*\/]/g)||[]).length+1;
+    }
     calcTotal();
   }catch{
-    cashRes.innerHTML = "خطأ";
-    cash.value = '';
-    calcTotal();
+    calcResult.innerHTML="خطأ";
   }
 });
-function addCash(){ closePopup(); }
 
-/* فيزا تلقائي */
-visaExpr.addEventListener('input',()=>{
-  try{
-    let expr = visaExpr.value.replace(/\s+/g,'');
-    let r = eval(expr || 0);
-    let ops = (expr.match(/[\+\-\*\/]/g)||[]).length + 1;
-    visaRes.innerHTML = `الإجمالي = ${r}<br>عدد العمليات = ${ops}`;
-    visa.value = r;
-    operations.value = ops;
-  }catch{
-    visaRes.innerHTML = "خطأ";
-    visa.value = '';
-    operations.value = '';
-  }
-});
-function addVisa(){ closePopup(); }
+function closePopup(){ calcPopup.style.display="none"; }
 
-/* معاينة */
+/* ===== معاينة ===== */
 function previewReceipt(){
 preview.innerHTML=`
 <table>
@@ -259,8 +236,8 @@ preview.innerHTML=`
 <tr><td>الشيفت</td><td>من ${fromShift.value} إلى ${toShift.value}</td></tr>
 <tr><td>التاريخ</td><td>${date.value}</td></tr>
 <tr><td>نقدي</td><td>${cash.value}</td></tr>
-<tr><td>انستاباي</td><td>${insta.value}</td></tr>
 <tr><td>محفظة</td><td>${wallet.value}</td></tr>
+<tr><td>انستاباي</td><td>${insta.value}</td></tr>
 <tr><td><b>الإجمالي</b></td><td><b>${total.value}</b></td></tr>
 <tr><td>فيزا</td><td>${visa.value}</td></tr>
 <tr><td>عدد العمليات</td><td>${operations.value}</td></tr>
@@ -270,29 +247,39 @@ preview.innerHTML=`
 preview.style.display="block";
 }
 
-/* الطباعة الاحترافية */
+/* ===== طباعة مع Scale 86% ===== */
 function printReceipt(){
   previewReceipt();
-  const printWindow = window.open('', '', 'width=800,height=600');
-  printWindow.document.write(`
-    <html dir="rtl">
-    <head>
-      <title>طباعة الإيصال</title>
-      <style>
-        body{font-family:Tahoma; background:#fff; padding:10px;}
-        table{width:100%; border-collapse:collapse; font-size:14px; text-align:center;}
-        td{border:1px solid #000; padding:6px;}
-      </style>
-    </head>
-    <body>
-      ${preview.innerHTML}
-    </body>
-    </html>
+  const w=window.open('','','width=800,height=600');
+  w.document.write(`
+  <html dir="rtl">
+  <head>
+  <style>
+  body{
+    font-family:Tahoma;
+    transform: scale(0.86);
+    transform-origin: top center;
+  }
+  table{
+    width:100%;
+    border-collapse:collapse;
+    text-align:center;
+    font-size:14px;
+  }
+  td{
+    border:1px solid #000;
+    padding:6px;
+  }
+  </style>
+  </head>
+  <body>
+  ${preview.innerHTML}
+  </body>
+  </html>
   `);
-  printWindow.document.close();
-  printWindow.focus();
-  printWindow.print();
-  printWindow.close();
+  w.document.close();
+  w.print();
+  w.close();
 }
 </script>
 
