@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title> Close the shaft - 1.1 </title>
+<title> Close the shaft - 1.2</title>
 
 <style>
 body{
@@ -36,16 +36,9 @@ input,select{
   background:transparent;
 }
 .total{font-weight:bold}
+button{cursor:pointer}
 
-button{
-  padding:6px 10px;
-  margin:3px;
-  cursor:pointer;
-}
-
-.actions{text-align:center;margin-top:10px}
-
-/* ===== Popup ===== */
+/* ===== نافذة الحاسبة ===== */
 .popup{
   display:none;
   position:fixed;
@@ -53,33 +46,23 @@ button{
   background:rgba(0,0,0,.6);
   justify-content:center;
   align-items:center;
-  z-index:1000;
+  z-index:999;
 }
 .popup-box{
   background:#fff;
   width:260px;
-  padding:15px;
+  padding:12px;
   border:1px solid #000;
   text-align:center;
 }
 .popup-box input{
   border:1px solid #000;
   margin-bottom:6px;
-  padding:4px;
+  padding:5px;
 }
 .popup-box .result{
-  margin:6px 0;
   font-weight:bold;
-}
-
-/* المعاينة */
-.preview{
-  display:none;
-  background:#fff;
-  width:80mm;
-  margin:20px auto;
-  border:1px solid #000;
-  padding:8px;
+  margin:6px 0;
 }
 </style>
 </head>
@@ -88,7 +71,7 @@ button{
 
 <div class="sheet">
 <table>
-<tr><td>اسم الصيدلية</td><td><input id="pharmacy" value="نعمة الله"></td></tr>
+<tr><td>اسم الصيدلية</td><td><input value="نعمة الله"></td></tr>
 <tr><td>اليوم</td><td><input id="day" readonly></td></tr>
 
 <tr>
@@ -102,7 +85,7 @@ button{
 <td>نقدي</td>
 <td>
 <input id="cash">
-<button onclick="openPopup('cash')">🧮</button>
+<button onclick="openCalc('cash')">🧮</button>
 </td>
 </tr>
 
@@ -112,7 +95,7 @@ button{
 <td>محفظة</td>
 <td>
 <input id="wallet">
-<button onclick="openPopup('wallet')">🧮</button>
+<button onclick="openCalc('wallet')">🧮</button>
 </td>
 </tr>
 
@@ -122,7 +105,7 @@ button{
 <td>إجمالي الفيزا</td>
 <td>
 <input id="visa">
-<button onclick="openPopup('visa')">🧮</button>
+<button onclick="openCalc('visa')">🧮</button>
 </td>
 </tr>
 
@@ -160,27 +143,26 @@ button{
 </td>
 </tr>
 </table>
-</div>
 
-<div class="actions">
-<button onclick="previewReceipt()">👁️ معاينة</button>
+<br>
 <button onclick="printReceipt()">🖨️ طباعة</button>
 </div>
 
-<div class="preview" id="preview"></div>
-
-<!-- ===== حاسبة موحدة ===== -->
+<!-- ===== نافذة الحاسبة ===== -->
 <div class="popup" id="calcPopup">
 <div class="popup-box">
 <h4>🧮 آلة حاسبة</h4>
-<input id="exprInput" placeholder="مثال: 10*200+500">
-<div class="result" id="calcResult"></div>
-<button onclick="closePopup()">✖ إغلاق</button>
+<input id="calcExpr" placeholder="مثال: 10*200+50">
+<div class="result" id="calcResult">الإجمالي = 0</div>
+<button onclick="applyCalc()">✔ إضافة</button>
+<button onclick="closeCalc()">✖ إغلاق</button>
 </div>
 </div>
 
 <script>
-/* شيفت */
+let currentField=null;
+
+/* الشيفت */
 for(let i=1;i<=12;i++){
   fromShift.innerHTML+=`<option>${i}</option>`;
   toShift.innerHTML+=`<option>${i}</option>`;
@@ -189,7 +171,7 @@ for(let i=1;i<=12;i++){
 /* اليوم */
 date.onchange=()=>{
   let d=new Date(date.value);
-  if(!isNaN(d)) day.value=d.toLocaleDateString('ar-EG',{weekday:'long'});
+  day.value=d.toLocaleDateString('ar-EG',{weekday:'long'});
 };
 
 /* إجمالي */
@@ -199,87 +181,77 @@ function calcTotal(){
 cash.oninput=insta.oninput=wallet.oninput=calcTotal;
 
 /* ===== الحاسبة ===== */
-let currentTarget=null;
-function openPopup(type){
-  currentTarget=type;
-  exprInput.value='';
-  calcResult.innerHTML='';
+function openCalc(field){
+  currentField=field;
+  calcExpr.value="";
+  calcResult.innerHTML="الإجمالي = 0";
   calcPopup.style.display="flex";
 }
 
-exprInput.addEventListener('input',()=>{
+calcExpr.oninput=()=>{
   try{
-    let expr=exprInput.value.replace(/\s+/g,'');
-    let r=eval(expr||0);
+    let r=eval(calcExpr.value);
     calcResult.innerHTML="الإجمالي = "+r;
 
-    if(currentTarget==='cash') cash.value=r;
-    if(currentTarget==='wallet') wallet.value=r;
-    if(currentTarget==='visa'){
-      visa.value=r;
-      operations.value=(expr.match(/[\+\-\*\/]/g)||[]).length+1;
+    if(currentField==="visa"){
+      let ops=calcExpr.value.split('+').filter(Boolean).length;
+      operations.value=ops;
     }
-    calcTotal();
   }catch{
-    calcResult.innerHTML="خطأ";
+    calcResult.innerHTML="عملية غير صحيحة";
   }
-});
+};
 
-function closePopup(){ calcPopup.style.display="none"; }
+function applyCalc(){
+  try{
+    let r=eval(calcExpr.value);
+    document.getElementById(currentField).value=r;
+    if(currentField!=="visa") calcTotal();
+    closeCalc();
+  }catch{}
+}
 
-/* ===== معاينة ===== */
-function previewReceipt(){
-preview.innerHTML=`
+function closeCalc(){
+  calcPopup.style.display="none";
+}
+
+/* ===== الطباعة ===== */
+function printReceipt(){
+if(!responsible.value||!reviewer.value){
+  alert("اختار مسؤول الدرج والمراجع الأول");
+  return;
+}
+
+let msg=`تزكير مهم ⚠️
+متنساش التقفيل على الجهاز يا دكتور 👌
+
+مسؤول الدرج: ${responsible.value}
+المراجع: ${reviewer.value}`;
+
+if(!confirm(msg)) return;
+
+let w=window.open('');
+w.document.write(`
+<html dir="rtl">
+<style>
+body{font-family:Tahoma;transform:scale(.86);transform-origin:top center}
+table{width:100%;border-collapse:collapse;text-align:center}
+td{border:1px solid #000;padding:6px}
+</style>
+<body>
 <table>
-<tr><td>الصيدلية</td><td>${pharmacy.value}</td></tr>
-<tr><td>اليوم</td><td>${day.value}</td></tr>
-<tr><td>الشيفت</td><td>من ${fromShift.value} إلى ${toShift.value}</td></tr>
-<tr><td>التاريخ</td><td>${date.value}</td></tr>
 <tr><td>نقدي</td><td>${cash.value}</td></tr>
-<tr><td>محفظة</td><td>${wallet.value}</td></tr>
 <tr><td>انستاباي</td><td>${insta.value}</td></tr>
+<tr><td>محفظة</td><td>${wallet.value}</td></tr>
 <tr><td><b>الإجمالي</b></td><td><b>${total.value}</b></td></tr>
 <tr><td>فيزا</td><td>${visa.value}</td></tr>
 <tr><td>عدد العمليات</td><td>${operations.value}</td></tr>
-<tr><td>مسؤول الدرج</td><td>${responsible.value}</td></tr>
-<tr><td>المراجع</td><td>${reviewer.value}</td></tr>
-</table>`;
-preview.style.display="block";
-}
-
-/* ===== طباعة مع Scale 86% ===== */
-function printReceipt(){
-  previewReceipt();
-  const w=window.open('','','width=800,height=600');
-  w.document.write(`
-  <html dir="rtl">
-  <head>
-  <style>
-  body{
-    font-family:Tahoma;
-    transform: scale(0.86);
-    transform-origin: top center;
-  }
-  table{
-    width:100%;
-    border-collapse:collapse;
-    text-align:center;
-    font-size:14px;
-  }
-  td{
-    border:1px solid #000;
-    padding:6px;
-  }
-  </style>
-  </head>
-  <body>
-  ${preview.innerHTML}
-  </body>
-  </html>
-  `);
-  w.document.close();
-  w.print();
-  w.close();
+</table>
+</body></html>
+`);
+w.document.close();
+w.print();
+w.close();
 }
 </script>
 
