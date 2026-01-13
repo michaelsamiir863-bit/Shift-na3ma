@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Close the shaft 1.4</title>
+<title>جرد الصيدلية</title>
 
 <style>
 body{
@@ -85,10 +85,19 @@ button{cursor:pointer;margin:4px}
 }
 
 /* الطباعة */
-@media print{
+@media print {
+  @page {
+    size: 80mm auto; /* ريسيت بعرض 80mm */
+    margin: 0;
+  }
   body{background:#fff;}
-  .sheet,.alert-box{display:none;}
-  #printContent{display:block;transform:scale(.86);transform-origin:top center;}
+  .sheet, .alert-box {display:none;}
+  #printContent {
+    display:block;
+    transform: scale(.86);
+    transform-origin: top center;
+    width: 80mm;
+  }
 }
 </style>
 </head>
