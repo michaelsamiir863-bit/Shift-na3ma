@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>جرد الصيدلية</title>
+<title>Close the shaft 1.4</title>
 
 <style>
 body{
@@ -38,7 +38,7 @@ input,select{
 .total{font-weight:bold}
 button{cursor:pointer;margin:4px}
 
-/* ===== نافذة الحاسبة ===== */
+/* ===== Popup عام ===== */
 .popup{
   display:none;
   position:fixed;
@@ -48,6 +48,8 @@ button{cursor:pointer;margin:4px}
   align-items:center;
   z-index:1000;
 }
+
+/* ===== الحاسبة ===== */
 .popup-box{
   background:#fff;
   width:260px;
@@ -61,20 +63,16 @@ button{cursor:pointer;margin:4px}
   background:#fff;
   width:90%;
   max-width:420px;
-  padding:25px;
+  padding:30px;
   border:4px solid #000;
   text-align:center;
-  position:fixed;
-  top:50%;
-  left:50%;
-  transform:translate(-50%,-50%);
-  z-index:10000;
 }
 .alert-box p{
-  font-size:20px;
-  line-height:1.8;
+  font-size:22px;
+  line-height:1.9;
 }
 
+/* ===== المعاينة ===== */
 .preview{
   display:none;
   background:#fff;
@@ -84,19 +82,26 @@ button{cursor:pointer;margin:4px}
   padding:8px;
 }
 
-/* الطباعة */
-@media print {
-  @page {
-    size: 80mm auto; /* ريسيت بعرض 80mm */
-    margin: 0;
+/* ===== الطباعة ===== */
+@media print{
+  @page{
+    size:80mm auto;
+    margin:0;
   }
+
   body{background:#fff;}
-  .sheet, .alert-box {display:none;}
-  #printContent {
-    display:block;
-    transform: scale(.86);
-    transform-origin: top center;
-    width: 80mm;
+  .sheet,.popup{display:none !important;}
+
+  #printContent{
+    display:block !important;
+    width:80mm;
+    transform:scale(.86);
+    transform-origin:top left; /* ✅ محاذاة لليسار */
+    margin:0;
+  }
+
+  #printContent table{
+    text-align:center;
   }
 }
 </style>
@@ -186,7 +191,7 @@ button{cursor:pointer;margin:4px}
 </div>
 </div>
 
-<!-- ===== نافذة الحاسبة ===== -->
+<!-- ===== الحاسبة ===== -->
 <div class="popup" id="calcPopup">
 <div class="popup-box">
 <h3>🧮 آلة حاسبة</h3>
@@ -201,7 +206,7 @@ button{cursor:pointer;margin:4px}
 <div class="popup" id="printAlert">
 <div class="alert-box">
 <p>
-يا دكتور <b><span id="alertResp"></span></b><br><br>
+يا دكتور <b><span id="alertResp"></span></b><br>
 متنساش تقفيل الدرج على الجهاز
 </p>
 <button onclick="confirmPrint()">✔ كله تمام – طباعة</button>
@@ -209,8 +214,8 @@ button{cursor:pointer;margin:4px}
 </div>
 </div>
 
-<!-- ===== محتوى الطباعة داخل div واحد ===== -->
-<div id="printContent" style="display:none;"></div>
+<!-- ===== محتوى الطباعة ===== -->
+<div id="printContent" style="display:none"></div>
 
 <script>
 let currentField=null;
@@ -259,27 +264,29 @@ function closeCalc(){calcPopup.style.display="none";}
 
 /* ===== المعاينة ===== */
 function previewReceipt(){
-printContent.innerHTML = buildReceipt();
-printContent.style.display="block";
-}
-
-/* ===== تنبيه الطباعة ===== */
-function openPrintAlert(){
-if(!responsible.value){
-  alert("اختار مسؤول الدرج الأول");
-  return;
-}
-alertResp.textContent=responsible.value;
-printAlert.style.display="flex";
-}
-function closePrintAlert(){
-printAlert.style.display="none";
+  printContent.innerHTML = buildReceipt();
+  printContent.style.display="block";
 }
 
 /* ===== الطباعة ===== */
+function openPrintAlert(){
+  if(!responsible.value){
+    alert("اختار مسؤول الدرج الأول");
+    return;
+  }
+  alertResp.textContent=responsible.value;
+  printAlert.style.display="flex";
+}
+
+function closePrintAlert(){
+  printAlert.style.display="none";
+}
+
 function confirmPrint(){
-printAlert.style.display="none";
-window.print();
+  printAlert.style.display="none";
+  printContent.innerHTML = buildReceipt(); // ✅ يبني الريسيت تلقائي
+  printContent.style.display="block";
+  window.print();
 }
 
 /* ===== بناء الريسيت ===== */
