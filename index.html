@@ -196,6 +196,9 @@ button{cursor:pointer;margin:4px}
 </div>
 </div>
 
+<!-- ===== iframe مخفي للطباعة لتجنب Timeout ===== -->
+<iframe id="printFrame" style="display:none;"></iframe>
+
 <script>
 let currentField=null;
 
@@ -260,22 +263,16 @@ function closePrintAlert(){
 printAlert.style.display="none";
 }
 
-/* ===== الطباعة ===== */
+/* ===== الطباعة باستخدام iframe لتفادي Timeout ===== */
 function confirmPrint(){
-let w=window.open('');
-w.document.write(`
-<html dir="rtl">
-<style>
-body{font-family:Tahoma;transform:scale(.86);transform-origin:top center}
-table{width:100%;border-collapse:collapse;text-align:center}
-td{border:1px solid #000;padding:6px}
-</style>
-<body>${buildReceipt()}</body>
-</html>
-`);
-w.document.close();
-w.print();
-w.close();
+const frame = document.getElementById('printFrame');
+frame.contentDocument.body.innerHTML = buildReceipt();
+frame.contentDocument.body.style.transform = "scale(.86)";
+frame.contentDocument.body.style.transformOrigin = "top center";
+frame.contentDocument.body.style.fontFamily = "Tahoma";
+frame.contentDocument.body.innerHTML = buildReceipt();
+frame.contentWindow.focus();
+frame.contentWindow.print();
 closePrintAlert();
 }
 
@@ -300,4 +297,5 @@ return `
 </script>
 
 </body>
-</html>
+  </html>
+  
