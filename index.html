@@ -64,6 +64,11 @@ button{cursor:pointer;margin:4px}
   padding:25px;
   border:4px solid #000;
   text-align:center;
+  position:fixed;
+  top:50%;
+  left:50%;
+  transform:translate(-50%,-50%);
+  z-index:10000;
 }
 .alert-box p{
   font-size:20px;
@@ -79,10 +84,11 @@ button{cursor:pointer;margin:4px}
   padding:8px;
 }
 
-/* طباعة */
+/* الطباعة */
 @media print{
-  body{background:#fff}
-  .sheet,.preview{border:none}
+  body{background:#fff;}
+  .sheet,.alert-box{display:none;}
+  #printContent{display:block;transform:scale(.86);transform-origin:top center;}
 }
 </style>
 </head>
@@ -171,8 +177,6 @@ button{cursor:pointer;margin:4px}
 </div>
 </div>
 
-<div class="preview" id="preview"></div>
-
 <!-- ===== نافذة الحاسبة ===== -->
 <div class="popup" id="calcPopup">
 <div class="popup-box">
@@ -196,8 +200,8 @@ button{cursor:pointer;margin:4px}
 </div>
 </div>
 
-<!-- ===== iframe مخفي للطباعة لتجنب Timeout ===== -->
-<iframe id="printFrame" style="display:none;"></iframe>
+<!-- ===== محتوى الطباعة داخل div واحد ===== -->
+<div id="printContent" style="display:none;"></div>
 
 <script>
 let currentField=null;
@@ -246,8 +250,8 @@ function closeCalc(){calcPopup.style.display="none";}
 
 /* ===== المعاينة ===== */
 function previewReceipt(){
-preview.innerHTML=buildReceipt();
-preview.style.display="block";
+printContent.innerHTML = buildReceipt();
+printContent.style.display="block";
 }
 
 /* ===== تنبيه الطباعة ===== */
@@ -263,17 +267,10 @@ function closePrintAlert(){
 printAlert.style.display="none";
 }
 
-/* ===== الطباعة باستخدام iframe لتفادي Timeout ===== */
+/* ===== الطباعة ===== */
 function confirmPrint(){
-const frame = document.getElementById('printFrame');
-frame.contentDocument.body.innerHTML = buildReceipt();
-frame.contentDocument.body.style.transform = "scale(.86)";
-frame.contentDocument.body.style.transformOrigin = "top center";
-frame.contentDocument.body.style.fontFamily = "Tahoma";
-frame.contentDocument.body.innerHTML = buildReceipt();
-frame.contentWindow.focus();
-frame.contentWindow.print();
-closePrintAlert();
+printAlert.style.display="none";
+window.print();
 }
 
 /* ===== بناء الريسيت ===== */
@@ -297,5 +294,4 @@ return `
 </script>
 
 </body>
-  </html>
-  
+</html>
