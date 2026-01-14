@@ -36,9 +36,7 @@ input,select,textarea{
   background:transparent;
   font-family:Tahoma;
 }
-textarea{
-  resize:none;
-}
+textarea{resize:none}
 .total{font-weight:bold}
 button{cursor:pointer;margin:4px}
 
@@ -50,20 +48,9 @@ button{cursor:pointer;margin:4px}
   background:rgba(0,0,0,.6);
   justify-content:center;
   align-items:center;
-  z-index:1000;
+  z-index:2000;
 }
-
-/* ===== الحاسبة ===== */
 .popup-box{
-  background:#fff;
-  width:260px;
-  padding:12px;
-  border:2px solid #000;
-  text-align:center;
-}
-
-/* ===== تنبيه الطباعة ===== */
-.alert-box{
   background:#fff;
   width:90%;
   max-width:420px;
@@ -71,9 +58,21 @@ button{cursor:pointer;margin:4px}
   border:4px solid #000;
   text-align:center;
 }
-.alert-box p{
-  font-size:22px;
+.popup-box h2{
+  margin-bottom:15px;
+}
+.popup-box p{
+  font-size:18px;
   line-height:1.9;
+}
+
+/* ===== الحاسبة ===== */
+.calc-box{
+  background:#fff;
+  width:260px;
+  padding:12px;
+  border:2px solid #000;
+  text-align:center;
 }
 
 /* ===== الطباعة ===== */
@@ -95,6 +94,18 @@ button{cursor:pointer;margin:4px}
 </head>
 
 <body>
+
+<!-- ===== تنبيه عند فتح الصفحة ===== -->
+<div class="popup" id="startupAlert">
+  <div class="popup-box">
+    <h2>أهلا يا دكتور 👋</h2>
+    <p>
+      رجاء التأكد من غلق شاشة الكاشير والأوردارات<br>
+      والتأكد من جميع الأذون
+    </p>
+    <button onclick="closeStartupAlert()">✔ كله تمام</button>
+  </div>
+</div>
 
 <div class="sheet">
 
@@ -171,7 +182,6 @@ button{cursor:pointer;margin:4px}
 </td>
 </tr>
 
-<!-- خانة الملاحظات (مخفية افتراضيًا) -->
 <tr id="notesRow" style="display:none">
 <td>ملاحظات</td>
 <td><textarea id="notes" rows="3"></textarea></td>
@@ -179,7 +189,6 @@ button{cursor:pointer;margin:4px}
 
 </table>
 
-<!-- الأزرار -->
 <div style="text-align:center">
 <button onclick="toggleNotes()">📝 ملاحظات</button>
 <button onclick="previewReceipt()">🧾 معاينة</button>
@@ -188,33 +197,28 @@ button{cursor:pointer;margin:4px}
 
 </div>
 
-<!-- ===== الحاسبة ===== -->
-<div class="popup" id="calcPopup">
-<div class="popup-box">
-<h3>📟 آلة حاسبة</h3>
-<input id="calcExpr" placeholder="10*200+50">
-<div id="calcResult">الإجمالي = 0</div>
-<button onclick="applyCalc()">✔ إضافة</button>
-<button onclick="closeCalc()">✖ إغلاق</button>
-</div>
-</div>
-
 <!-- ===== تنبيه الطباعة ===== -->
 <div class="popup" id="printAlert">
-<div class="alert-box">
-<p> يا : <b><span id="alertResp"></span></b><br>
-متنساش تقفيل صفحة الكاشير و تقفيل الشيفت على الجهاز والدفتر🤗 🔪 ⚠️
+<div class="popup-box">
+<p>
+يا : <b><span id="alertResp"></span></b><br>
+متنساش تقفيل صفحة الكاشير و تقفيل الشيفت على الجهاز والدفتر
 </p>
 <button onclick="confirmPrint()">✔ كله تمام – اطبع</button>
 <button onclick="closePrintAlert()">✖ رجوع</button>
 </div>
 </div>
 
-<!-- ===== محتوى الطباعة ===== -->
 <div id="printContent" style="display:none"></div>
 
 <script>
-let currentField=null;
+/* ===== تنبيه البداية ===== */
+window.onload = () => {
+  startupAlert.style.display="flex";
+}
+function closeStartupAlert(){
+  startupAlert.style.display="none";
+}
 
 /* الشيفت */
 for(let i=1;i<=12;i++){
@@ -228,49 +232,25 @@ date.onchange=()=>{
   day.value=d.toLocaleDateString('ar-EG',{weekday:'long'});
 };
 
-/* إجمالي */
+/* الإجمالي */
 function calcTotal(){
   total.value=(+cash.value||0)+(+insta.value||0)+(+wallet.value||0);
 }
 cash.oninput=insta.oninput=wallet.oninput=calcTotal;
 
-/* ===== الحاسبة ===== */
-function openCalc(f){
-  currentField=f;
-  calcExpr.value="";
-  calcResult.innerHTML="الإجمالي = 0";
-  calcPopup.style.display="flex";
-}
-calcExpr.oninput=()=>{
-  try{
-    let r=eval(calcExpr.value);
-    calcResult.innerHTML="الإجمالي = "+r;
-    if(currentField==="visa"){
-      operations.value=calcExpr.value.split('+').filter(Boolean).length;
-    }
-  }catch{}
-}
-function applyCalc(){
-  let r=eval(calcExpr.value);
-  document.getElementById(currentField).value=r;
-  if(currentField!=="visa") calcTotal();
-  closeCalc();
-}
-function closeCalc(){calcPopup.style.display="none";}
-
-/* ===== الملاحظات ===== */
+/* الملاحظات */
 function toggleNotes(){
   notesRow.style.display =
     notesRow.style.display==="none" ? "table-row" : "none";
 }
 
-/* ===== المعاينة ===== */
+/* المعاينة */
 function previewReceipt(){
   printContent.innerHTML = buildReceipt();
   printContent.style.display="block";
 }
 
-/* ===== الطباعة ===== */
+/* الطباعة */
 function openPrintAlert(){
   if(!responsible.value){
     alert("اختار مسؤول الدرج الأول");
@@ -279,9 +259,7 @@ function openPrintAlert(){
   alertResp.textContent=responsible.value;
   printAlert.style.display="flex";
 }
-function closePrintAlert(){
-  printAlert.style.display="none";
-}
+function closePrintAlert(){printAlert.style.display="none"}
 function confirmPrint(){
   printAlert.style.display="none";
   printContent.innerHTML = buildReceipt();
@@ -289,7 +267,7 @@ function confirmPrint(){
   window.print();
 }
 
-/* ===== بناء الريسيت ===== */
+/* بناء الريسيت */
 function buildReceipt(){
 return `
 <table>
@@ -312,4 +290,3 @@ ${notes.value ? `<tr><td>ملاحظات</td><td>${notes.value}</td></tr>` : ``}
 
 </body>
 </html>
-
