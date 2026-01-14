@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Close the shaft 1.5</title>
+<title>Close the shaft 1.6</title>
 
 <style>
 body{
@@ -28,12 +28,16 @@ td{
   border:1px solid #000;
   padding:6px;
 }
-input,select{
+input,select,textarea{
   width:100%;
   border:none;
   outline:none;
   text-align:center;
   background:transparent;
+  font-family:Tahoma;
+}
+textarea{
+  resize:none;
 }
 .total{font-weight:bold}
 button{cursor:pointer;margin:4px}
@@ -72,36 +76,19 @@ button{cursor:pointer;margin:4px}
   line-height:1.9;
 }
 
-/* ===== المعاينة ===== */
-.preview{
-  display:none;
-  background:#fff;
-  width:80mm;
-  margin:15px auto;
-  border:1px solid #000;
-  padding:8px;
-}
-
 /* ===== الطباعة ===== */
 @media print{
   @page{
     size:80mm auto;
     margin:0;
   }
-
   body{background:#fff;}
   .sheet,.popup{display:none !important;}
-
   #printContent{
     display:block !important;
     width:80mm;
     transform:scale(.86);
-    transform-origin:top left; /* ✅ محاذاة لليسار */
-    margin:0;
-  }
-
-  #printContent table{
-    text-align:center;
+    transform-origin:top left;
   }
 }
 </style>
@@ -183,12 +170,22 @@ button{cursor:pointer;margin:4px}
 </select>
 </td>
 </tr>
+
+<!-- خانة الملاحظات (مخفية افتراضيًا) -->
+<tr id="notesRow" style="display:none">
+<td>ملاحظات</td>
+<td><textarea id="notes" rows="3"></textarea></td>
+</tr>
+
 </table>
 
+<!-- الأزرار -->
 <div style="text-align:center">
+<button onclick="toggleNotes()">📝 ملاحظات</button>
 <button onclick="previewReceipt()">🧾 معاينة</button>
 <button onclick="openPrintAlert()">🖨️ طباعة</button>
 </div>
+
 </div>
 
 <!-- ===== الحاسبة ===== -->
@@ -206,7 +203,7 @@ button{cursor:pointer;margin:4px}
 <div class="popup" id="printAlert">
 <div class="alert-box">
 <p> يا : <b><span id="alertResp"></span></b><br>
-متنساش تقفيل صفحة الكاشير و تقفيل الشيفت على الجهاز والدفتر 🤗🔪 ⚠️
+متنساش تقفيل صفحة الكاشير و تقفيل الشيفت على الجهاز والدفتر
 </p>
 <button onclick="confirmPrint()">✔ كله تمام – اطبع</button>
 <button onclick="closePrintAlert()">✖ رجوع</button>
@@ -261,6 +258,12 @@ function applyCalc(){
 }
 function closeCalc(){calcPopup.style.display="none";}
 
+/* ===== الملاحظات ===== */
+function toggleNotes(){
+  notesRow.style.display =
+    notesRow.style.display==="none" ? "table-row" : "none";
+}
+
 /* ===== المعاينة ===== */
 function previewReceipt(){
   printContent.innerHTML = buildReceipt();
@@ -276,14 +279,12 @@ function openPrintAlert(){
   alertResp.textContent=responsible.value;
   printAlert.style.display="flex";
 }
-
 function closePrintAlert(){
   printAlert.style.display="none";
 }
-
 function confirmPrint(){
   printAlert.style.display="none";
-  printContent.innerHTML = buildReceipt(); // ✅ يبني الريسيت تلقائي
+  printContent.innerHTML = buildReceipt();
   printContent.style.display="block";
   window.print();
 }
@@ -304,9 +305,11 @@ return `
 <tr><td>عدد العمليات</td><td>${operations.value}</td></tr>
 <tr><td>مسؤول الدرج</td><td>${responsible.value}</td></tr>
 <tr><td>المراجع</td><td>${reviewer.value}</td></tr>
+${notes.value ? `<tr><td>ملاحظات</td><td>${notes.value}</td></tr>` : ``}
 </table>`;
 }
 </script>
 
 </body>
 </html>
+
