@@ -3,14 +3,13 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Close Shift1.7</title>
-
+<title>Close Shift</title>
 <style>
-/* === توسيط النصوص === */
+/* === توسيط النصوص وحدود سوداء === */
 table, table td, table th{
   text-align:center;
   vertical-align:middle;
-  border:1px solid #000; /* حدود سوداء لجميع الخانات */
+  border:1px solid #000;
   border-collapse:collapse;
 }
 
@@ -41,6 +40,7 @@ table{
   width:100%;
   font-size:14px;
 }
+
 td{
   padding:8px 6px;
 }
@@ -57,7 +57,7 @@ input,select,textarea{
   padding:7px;
   border-radius:6px;
   font-family:Tahoma;
-  text-align:center; /* توسيط القيم داخل الخانات */
+  text-align:center;
 }
 textarea{resize:none}
 
@@ -93,16 +93,40 @@ button.secondary{background:#777}
   padding:22px;
   border-radius:16px;
   box-shadow:0 12px 40px rgba(0,0,0,.3);
-  text-align:center; /* توسيط النصوص داخل البوب أب */
+  text-align:center;
 }
 .popup-box h2{color:var(--main);text-align:center}
 .popup-box label{display:block;margin:6px 0;font-size:14px}
 
-/* ===== Print / Preview ===== */
+/* ===== Preview جدول مع ظل احترافي ===== */
+#previewWrapper{
+  max-width:390px;
+  margin:auto;
+  box-shadow:0 8px 25px rgba(0,0,0,0.15);
+}
+
+#previewWrapper table{
+  width:100%;
+  border-collapse:collapse;
+}
+
+#previewWrapper td{
+  border:1px solid #000;
+  padding:6px;
+  text-align:center;
+}
+
+#previewWrapper img.logo{
+  width:100%;
+  height:auto;
+  display:block;
+  margin-bottom:10px;
+}
+
 @media print{
   @page{size:80mm auto;margin:0}
   body{background:#fff}
-  .sheet,.popup,.actions{display:none!important}
+  .sheet,.popup,.actions,#previewWrapper{display:none!important}
 
   #printContent{
     display:block!important;
@@ -123,13 +147,14 @@ button.secondary{background:#777}
     text-align:center;
   }
   #printContent img.logo{
-    width:100%; /* اللوجو يملأ عرض الجدول */
+    width:100%;
     height:auto;
+    display:block;
+    margin-bottom:10px;
   }
 }
 </style>
 </head>
-
 <body>
 
 <!-- ===== Login ===== -->
@@ -165,7 +190,6 @@ button.secondary{background:#777}
 <tr><td>اسم الصيدلية</td><td><input id="pharmacy" value="نعمة الله"></td></tr>
 <tr><td>التاريخ</td><td><input type="date" id="date"></td></tr>
 <tr><td>اليوم</td><td><input id="day" readonly></td></tr>
-
 <tr>
 <td>الشيفت</td>
 <td>
@@ -183,15 +207,11 @@ button.secondary{background:#777}
 <tr><td>نقدي</td><td><input id="cash"><button onclick="openCalc('cash')">🧮</button></td></tr>
 <tr><td>انستاباي</td><td><input id="insta"><button onclick="openCalc('insta')">🧮</button></td></tr>
 <tr><td>محفظة</td><td><input id="wallet"><button onclick="openCalc('wallet')">🧮</button></td></tr>
-
 <tr><td>إجمالي</td><td><input id="total" class="total" readonly></td></tr>
-
 <tr><td>فيزا</td><td><input id="visa"><button onclick="openCalc('visa')">🧮</button></td></tr>
 <tr><td>عدد العمليات</td><td><input id="operations" readonly></td></tr>
 <tr><td>مشتريات أفراد</td><td><input id="individuals"></td></tr>
-
 <tr><td>مسؤول الدرج</td><td><input id="responsible" readonly></td></tr>
-
 <tr><td>المراجع</td><td>
 <select id="reviewer">
 <option></option>
@@ -219,6 +239,9 @@ button.secondary{background:#777}
 </div>
 </div>
 
+<div id="previewWrapper" style="display:none"></div>
+<div id="printContent" style="display:none"></div>
+
 <!-- ===== Calculator ===== -->
 <div class="popup" id="calcPopup">
   <div class="popup-box">
@@ -242,8 +265,6 @@ button.secondary{background:#777}
   </div>
 </div>
 
-<div id="printContent" style="display:none"></div>
-
 <script>
 const employees={
 124:"د مايكل سمير",
@@ -254,7 +275,6 @@ const employees={
 159:"د اسلام",
 644:"د بسنت"
 };
-
 window.onload=()=>loginPopup.style.display="flex";
 
 function checkCode(){
@@ -327,8 +347,8 @@ function toggleNotes(){
 }
 
 function previewReceipt(){
-  printContent.innerHTML=buildReceipt();
-  printContent.style.display="block";
+  previewWrapper.innerHTML=buildReceipt();
+  previewWrapper.style.display="block";
 }
 
 function openPrintAlert(){
@@ -346,7 +366,9 @@ function confirmPrint(){
 function buildReceipt(){
 return `
 <table>
-<tr><td colspan="2"><img class="logo" src="https://lh3.googleusercontent.com/pw/AP1GczP_sijFsrgxGnvXCGil40l488lpzmaNuVbGa9tLv4gbA7-yQs-WMQcOFWCvbDg2C9Ar9MZHbciNJvDIDJmSZ4ORpYZWBNp7FQkrmU-fMeCF3ImRL3jZ3Ixtmobh2D3MJ1i2VkQ8WenYrRZ3l4i1s5h9=w2499-h875-s-no-gm?authuser=0" alt="Logo"></td></tr>
+<tr><td colspan="2">
+  <img class="logo" src="https://lh3.googleusercontent.com/pw/AP1GczMaGbEu5kYEVerprQgM--vxjYsvqftyLvhsdv71wPR9RtHhiodTCOzR0ybht_Ld2Bc3LJEWjQtDRnIzxTFYfVsM8mqYfuQgiWTjM4nQOz7X1PYdqxDWL2V89bh4DhGZFbq5oMvtJNudinNTkR-I_eUc=w2400-h841-s-no-gm?authuser=0" alt="Logo">
+</td></tr>
 <tr><td>الصيدلية</td><td>${pharmacy.value}</td></tr>
 <tr><td>التاريخ</td><td>${date.value}</td></tr>
 <tr><td>اليوم</td><td>${day.value}</td></tr>
