@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Close Shift1.9</title>
+<title>Close Shift2.0</title>
 <style>
 /* === توسيط النصوص وحدود سوداء === */
 table, table td, table th{
@@ -71,6 +71,7 @@ button{
   border-radius:18px;
   cursor:pointer;
   font-size:13px;
+  transition: all 0.3s ease;
 }
 button.secondary{background:#777}
 
@@ -169,23 +170,32 @@ button.secondary{background:#777}
   </div>
 </div>
 
-<!-- ===== Welcome / Checklist ===== -->
+<!-- ===== Welcome / Checklist رسمي ===== -->
 <div class="popup" id="startAlert">
   <div class="popup-box">
     <h2 id="welcomeText"></h2>
-    <p style="font-weight:bold;margin-top:10px">تم مراجعة التالي:</p>
-    <label><input type="checkbox" class="checkItem"> فواتير الفيزا</label>
-    <label><input type="checkbox" class="checkItem"> شاشة الكاشير</label>
-    <label><input type="checkbox" class="checkItem"> الأذون من الفروع</label>
-    <label><input type="checkbox" class="checkItem"> الفواتير المعلقة على الجهاز الخلفي</label>
+
+    <!-- شريط تقدم -->
+    <div style="background:#eee;border-radius:12px;overflow:hidden;margin:10px 0;">
+      <div id="progressBar" style="height:12px;width:0%;background:var(--main);transition:width 0.5s ease"></div>
+    </div>
+
+    <!-- جملة رسمية قبل القائمة -->
+    <p style="font-weight:bold;margin-top:10px">يرجى التأكد من التالي:</p>
+
+    <!-- قائمة البنود -->
+    <div id="checklistContainer"></div>
+
     <br>
     <button id="confirmBtn" disabled
-      style="opacity:.5;cursor:not-allowed"
+      style="opacity:.5;cursor:not-allowed;transition:opacity 0.3s;"
       onclick="closeStartAlert()">كله تمام</button>
   </div>
 </div>
 
+<!-- ===== Main Sheet ===== -->
 <div class="sheet">
+<!-- ... محتوى الجدول كما في الكود الأصلي ... -->
 <table>
 <tr><td>التاريخ</td><td><input type="date" id="date"></td></tr>
 <tr><td>اليوم</td><td><input id="day" readonly></td></tr>
@@ -228,7 +238,6 @@ button.secondary{background:#777}
 <td>ملاحظات</td>
 <td><textarea id="notes"></textarea></td>
 </tr>
-
 </table>
 
 <div class="actions">
@@ -287,17 +296,69 @@ function checkCode(){
   }else loginError.textContent="كود غير صحيح";
 }
 
-function enableChecklist(){
-  const checks=document.querySelectorAll(".checkItem");
-  const btn=confirmBtn;
-  checks.forEach(c=>{
-    c.onchange=()=>{
-      const ok=[...checks].every(i=>i.checked);
-      btn.disabled=!ok;
-      btn.style.opacity=ok?1:.5;
-      btn.style.cursor=ok?"pointer":"not-allowed";
-    }
-  });
+// ===== Checklist رسمي مع صوت لكل بند + شريط تقدم =====
+function enableChecklist() {
+  const checklistData = [
+    { text: "فواتير الفيزا", sound: "https://www.soundjay.com/button/sounds/button-09.mp3" },
+    { text: "شاشة الكاشير", sound: "https://www.soundjay.com/button/sounds/button-10.mp3" },
+    { text: "الأذون من الفروع", sound: "https://www.soundjay.com/button/sounds/button-3.mp3" },
+    { text: "الفواتير المعلقة على الجهاز الخلفي", sound: "https://www.soundjay.com/button/sounds/button-6.mp3" }
+  ];
+
+  const container = document.getElementById("checklistContainer");
+  const btn = document.getElementById("confirmBtn");
+  const progressBar = document.getElementById("progressBar");
+
+  container.innerHTML = "";
+  let currentStep = 0;
+
+  function showNextItem() {
+    if (currentStep >= checklistData.length) return;
+
+    const item = checklistData[currentStep];
+    const label = document.createElement("label");
+    label.style.opacity = 0;
+    label.style.display = "block";
+    label.style.transform = "translateY(20px)";
+    label.style.transition = "opacity 0.5s, transform 0.5s";
+
+    const checkbox = document.createElement("input");
+    checkbox.type = "checkbox";
+    checkbox.className = "checkItem";
+
+    label.appendChild(checkbox);
+    label.append(" " + item.text);
+    container.appendChild(label);
+
+    setTimeout(() => {
+      label.style.opacity = 1;
+      label.style.transform = "translateY(0)";
+    }, 50);
+
+    checkbox.onchange = () => {
+      if (checkbox.checked) {
+        // صوت لكل بند
+        const sound = new Audio(item.sound);
+        sound.play();
+
+        // تأشير ✅
+        label.innerHTML = `<input type="checkbox" checked disabled> ✅ ${item.text}`;
+
+        currentStep++;
+        progressBar.style.width = (currentStep / checklistData.length * 100) + "%";
+
+        if (currentStep === checklistData.length) {
+          btn.disabled = false;
+          btn.style.opacity = 1;
+          btn.style.cursor = "pointer";
+        } else {
+          showNextItem();
+        }
+      }
+    };
+  }
+
+  showNextItem();
 }
 
 function closeStartAlert(){startAlert.style.display="none"}
