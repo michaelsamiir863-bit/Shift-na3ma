@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>Close Shift</title>
+<title>Close Shift1.8</title>
 <style>
 /* === توسيط النصوص وحدود سوداء === */
 table, table td, table th{
@@ -187,7 +187,6 @@ button.secondary{background:#777}
 
 <div class="sheet">
 <table>
-<tr><td>اسم الصيدلية</td><td><input id="pharmacy" value="نعمة الله"></td></tr>
 <tr><td>التاريخ</td><td><input type="date" id="date"></td></tr>
 <tr><td>اليوم</td><td><input id="day" readonly></td></tr>
 <tr>
@@ -207,7 +206,7 @@ button.secondary{background:#777}
 <tr><td>نقدي</td><td><input id="cash"><button onclick="openCalc('cash')">🧮</button></td></tr>
 <tr><td>انستاباي</td><td><input id="insta"><button onclick="openCalc('insta')">🧮</button></td></tr>
 <tr><td>محفظة</td><td><input id="wallet"><button onclick="openCalc('wallet')">🧮</button></td></tr>
-<tr><td>إجمالي</td><td><input id="total" class="total" readonly></td></tr>
+<tr><td>إجمالي ماسبق</td><td><input id="total" class="total" readonly></td></tr>
 <tr><td>فيزا</td><td><input id="visa"><button onclick="openCalc('visa')">🧮</button></td></tr>
 <tr><td>عدد العمليات</td><td><input id="operations" readonly></td></tr>
 <tr><td>مشتريات أفراد</td><td><input id="individuals"></td></tr>
@@ -258,7 +257,7 @@ button.secondary{background:#777}
   <div class="popup-box">
     <p style="text-align:center">
       يا دكتور <b id="alertResp"></b><br>
-      متنساش تقفيل الشيفت
+      متنساش تقفيل الشيفت علي الجهاز
     </p>
     <button onclick="confirmPrint()">طباعة</button>
     <button class="secondary" onclick="closePrintAlert()">رجوع</button>
@@ -369,14 +368,13 @@ return `
 <tr><td colspan="2">
   <img class="logo" src="https://lh3.googleusercontent.com/pw/AP1GczMaGbEu5kYEVerprQgM--vxjYsvqftyLvhsdv71wPR9RtHhiodTCOzR0ybht_Ld2Bc3LJEWjQtDRnIzxTFYfVsM8mqYfuQgiWTjM4nQOz7X1PYdqxDWL2V89bh4DhGZFbq5oMvtJNudinNTkR-I_eUc=w2400-h841-s-no-gm?authuser=0" alt="Logo">
 </td></tr>
-<tr><td>الصيدلية</td><td>${pharmacy.value}</td></tr>
 <tr><td>التاريخ</td><td>${date.value}</td></tr>
 <tr><td>اليوم</td><td>${day.value}</td></tr>
 <tr><td>الشيفت</td><td>${shiftTime.textContent}</td></tr>
 <tr><td>نقدي</td><td>${cash.value}</td></tr>
 <tr><td>انستاباي</td><td>${insta.value}</td></tr>
 <tr><td>محفظة</td><td>${wallet.value}</td></tr>
-<tr><td>إجمالي</td><td>${total.value}</td></tr>
+<tr><td>إجمالي ماسبق</td><td>${total.value}</td></tr>
 <tr><td>فيزا</td><td>${visa.value}</td></tr>
 <tr><td>عدد العمليات</td><td>${operations.value}</td></tr>
 <tr><td>مشتريات أفراد</td><td>${individuals.value}</td></tr>
